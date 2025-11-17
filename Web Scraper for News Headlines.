@@ -1,0 +1,51 @@
+# scraper.py
+
+import requests
+from bs4 import BeautifulSoup
+
+URL = "https://www.bbc.com/news"   
+OUTPUT_FILE = "headlines.txt"
+
+def fetch_headlines():
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
+        response = requests.get(URL, headers=headers)
+
+        if response.status_code != 200:
+            print("Failed to fetch webpage!")
+            return []
+
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # Grab <h2> headline tags
+        titles = soup.find_all("h2")
+
+        headlines = [title.get_text(strip=True) for title in titles]
+        return headlines
+
+    except Exception as e:
+        print("Error:", e)
+        return []
+
+
+def save_headlines(headlines):
+    with open(OUTPUT_FILE, "w") as file:
+        for h in headlines:
+            file.write(h + "\n")
+
+
+def main():
+    print("Scraping headlines...")
+    headlines = fetch_headlines()
+
+    if headlines:
+        save_headlines(headlines)
+        print(f"Saved {len(headlines)} headlines to {OUTPUT_FILE}.")
+    else:
+        print("No headlines found.")
+
+
+if __name__ == "__main__":
+    main()
